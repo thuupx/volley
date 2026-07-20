@@ -133,7 +133,7 @@ if $DO_CORE; then
     log "Building native addon (current platform, release)..."
     (
       cd crates/core
-      napi build --platform --release
+      pnpm exec napi build --platform --release
     ) || die "napi build failed for @thupham/volley-core"
     ok "Native addon built"
   else
@@ -145,7 +145,7 @@ if $DO_CORE; then
   if $DRY_RUN; then
     # napi prepublish doesn't have a --dry-run flag; show what it would do.
     warn "Dry run: skipping actual napi prepublish"
-    printf '  %s→%s napi prepublish -t npm (in crates/core/)\n' "$C_DIM" "$C_RESET" >&2
+    printf '  %s→%s pnpm exec napi prepublish -t npm (in crates/core/)\n' "$C_DIM" "$C_RESET" >&2
   else
     NAPI_PUBLISH_FLAGS=("-t" "npm")
     if [ -n "$OTP" ]; then
@@ -153,7 +153,7 @@ if $DO_CORE; then
     fi
     (
       cd crates/core
-      napi prepublish "${NAPI_PUBLISH_FLAGS[@]}"
+      pnpm exec napi prepublish "${NAPI_PUBLISH_FLAGS[@]}"
     ) || die "napi prepublish failed for @thupham/volley-core"
     ok "Published @thupham/volley-core@$CORE_VERSION"
   fi
