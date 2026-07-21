@@ -101,10 +101,9 @@ jobs:
           retention-days: 7
 
   # ── Publish lunge-core + platform packages ──────────────────────────────
-  # Uses npm Trusted Publisher (OIDC) — no NPM_TOKEN secret needed.
-  # The package must be configured as a trusted publisher on npm:
-  #   repo: thuupx/lunge, workflow: release.yml, environment: (none)
-  # Requires `permissions: id-token: write` (set at workflow level).
+  # Authenticates with an NPM_TOKEN (classic automation or granular publish
+  # token stored in GitHub Secrets). Provenance is still signed via OIDC
+  # (id-token: write at workflow level) — no Trusted Publisher config needed.
   publish-core:
     needs: build-native
     runs-on: ubuntu-22.04
@@ -149,8 +148,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # napi prepublish spawns `npm publish` as a child process.
-          # These env vars are inherited by the child so every per-platform
-          # package gets --access public + provenance (OIDC auto-detected).
+          # NODE_AUTH_TOKEN authenticates the child; provenance is signed via
+          # OIDC (id-token: write at workflow level).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_ACCESS: public
           NPM_CONFIG_PROVENANCE: true
         run: pnpm exec napi prepublish -t npm --no-gh-release
@@ -158,6 +158,7 @@ jobs:
       - name: Publish lunge-core main package
         working-directory: crates/core
         env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_ACCESS: public
           NPM_CONFIG_PROVENANCE: true
         run: npm publish --access public
@@ -187,6 +188,7 @@ jobs:
       - name: Publish lunge
         working-directory: packages/mcp-server
         env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_ACCESS: public
           NPM_CONFIG_PROVENANCE: true
         run: npm publish --access public
