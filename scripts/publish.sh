@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/publish.sh — publish lunge-core + lunge to npm.
+# scripts/publish.sh - publish lunge-core + lunge-mcp to npm.
 #
 # This is the local single-platform publish path. For cross-platform releases
 # (8 targets), push a v* tag and let .github/workflows/release.yml do it.
@@ -10,13 +10,13 @@
 #   3. Publish lunge-core + the platform-specific package
 #      (e.g. lunge-core-darwin-arm64) via `napi prepublish -t npm`.
 #   4. Build the TypeScript MCP server (tsc).
-#   5. Publish lunge via `pnpm publish` (replaces workspace:*
-#      with the real version automatically).
+#   5. Publish lunge-mcp via `pnpm publish` (replaces workspace:*
+#      with the real version automatically). The bin name stays `lunge`.
 #
 # Usage:
 #   scripts/publish.sh                     # build + publish both packages
 #   scripts/publish.sh --core              # only lunge-core
-#   scripts/publish.sh --mcp               # only lunge
+#   scripts/publish.sh --mcp               # only lunge-mcp
 #   scripts/publish.sh --dry-run           # npm publish --dry-run (no actual upload)
 #   scripts/publish.sh --no-build          # skip builds, publish already-built artifacts
 #   scripts/publish.sh --otp=123456        # pass 2FA OTP to npm publish
@@ -107,10 +107,10 @@ MCP_VERSION="$(grep -m1 -E '"version"' packages/mcp-server/package.json \
   | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')"
 
 [ -n "$CORE_VERSION" ] || die "Could not read lunge-core version"
-[ -n "$MCP_VERSION" ]  || die "Could not read lunge version"
+[ -n "$MCP_VERSION" ]  || die "Could not read lunge-mcp version"
 
 log "lunge-core @ $CORE_VERSION"
-log "lunge  @ $MCP_VERSION"
+log "lunge-mcp @ $MCP_VERSION"
 printf '\n' >&2
 
 # ─── Publish lunge-core ───────────────────────────────────────────
@@ -179,23 +179,23 @@ if $DO_CORE; then
   printf '\n' >&2
 fi
 
-# ─── Publish lunge ────────────────────────────────────────────
+# ─── Publish lunge-mcp ────────────────────────────────────────────
 if $DO_MCP; then
-  printf '%s%s─ lunge ─%s\n' "$C_BOLD" "$C_BLUE" "$C_RESET" >&2
+  printf '%s%s─ lunge-mcp ─%s\n' "$C_BOLD" "$C_BLUE" "$C_RESET" >&2
 
   if ! $NO_BUILD; then
     log "Building TypeScript MCP server (tsc)..."
     (
       cd packages/mcp-server
       pnpm build
-    ) || die "tsc build failed for lunge"
+    ) || die "tsc build failed for lunge-mcp"
     ok "MCP server built"
   else
     warn "Skipping build (--no-build); using existing dist/"
     [ -d packages/mcp-server/dist ] || die "packages/mcp-server/dist missing. Run without --no-build first."
   fi
 
-  log "Publishing lunge..."
+  log "Publishing lunge-mcp..."
   PNPM_PUBLISH_FLAGS=("publish" "--access" "$ACCESS" "--no-git-checks")
   if $DRY_RUN; then
     PNPM_PUBLISH_FLAGS+=("--dry-run")
@@ -206,19 +206,19 @@ if $DO_MCP; then
   (
     cd packages/mcp-server
     pnpm "${PNPM_PUBLISH_FLAGS[@]}"
-  ) || die "pnpm publish failed for lunge"
-  ok "Published lunge@$MCP_VERSION"
+  ) || die "pnpm publish failed for lunge-mcp"
+  ok "Published lunge-mcp@$MCP_VERSION"
   printf '\n' >&2
 fi
 
 # ─── Summary ────────────────────────────────────────────────────────────────
 printf '%s%sDone!%s Published:\n' "$C_BOLD" "$C_GREEN" "$C_RESET" >&2
 $DO_CORE && printf '  • lunge-core@%s (current platform only)\n' "$CORE_VERSION" >&2
-$DO_MCP   && printf '  • lunge@%s\n'  "$MCP_VERSION"  >&2
+$DO_MCP   && printf '  • lunge-mcp@%s\n'  "$MCP_VERSION"  >&2
 printf '\n%sFor cross-platform releases, push a tag to trigger CI:%s\n' "$C_DIM" "$C_RESET" >&2
 printf '  git tag v%s\n' "$MCP_VERSION" >&2
 printf '  git push origin v%s\n\n' "$MCP_VERSION" >&2
 
 if $DO_CORE; then
-  printf '%sVerify:%s npx -y lunge\n' "$C_DIM" "$C_RESET" >&2
+  printf '%sVerify:%s npx -y lunge-mcp\n' "$C_DIM" "$C_RESET" >&2
 fi

@@ -1,7 +1,7 @@
 {
-  "name": "lunge",
+  "name": "lunge-mcp",
   "version": "1.0.8",
-  "description": "MCP server for AI-agent-driven API testing (REST/GraphQL/WS/SSE/gRPC)",
+  "description": "Agent-native advanced API client - execute and test REST/GraphQL/WS/SSE/gRPC requests from any MCP-capable AI agent",
   "type": "module",
   "bin": {
     "lunge": "dist/index.js"

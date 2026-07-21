@@ -4,7 +4,9 @@ Project info for AI agents / contributors working on **lunge**.
 
 ## What this is
 
-An MCP server that lets AI agents perform API testing (REST/GraphQL/WS/SSE/gRPC).
+An agent-native advanced API client - lets AI agents execute and test API requests
+(REST/GraphQL/WS/SSE/gRPC) from any MCP-capable client. Think advanced curl, native
+for agents: request execution, assertions, {{var}} extraction, collections, OpenAPI/HAR/curl import.
 Architecture: Rust core (`crates/core`, napi-rs **v3** native addon) + TypeScript MCP layer
 (`packages/mcp-server`). See `docs/` for the full plan.
 
@@ -81,7 +83,7 @@ Implemented tools: `http_request`, `graphql_request`, `graphql_introspect`, `ws_
   "mcpServers": {
     "lunge": {
       "command": "npx",
-      "args": ["-y", "lunge"]
+      "args": ["-y", "lunge-mcp"]
     }
   }
 }
@@ -91,16 +93,18 @@ Implemented tools: `http_request`, `graphql_request`, `graphql_introspect`, `ws_
 
 Lunge is published to npm as two unscoped packages:
 
-- **`lunge-core`** — the Rust native addon (napi-rs). Published as a main package
+- **`lunge-core`** - the Rust native addon (napi-rs). Published as a main package
   plus platform-specific optional dependencies (`lunge-core-darwin-arm64`,
   `lunge-core-linux-x64-gnu`, etc.). The generated `index.js` requires the right
   platform package at runtime.
-- **`lunge`** — the TypeScript MCP server. Depends on `lunge-core`. The
-  `bin` name is `lunge`, so `npx -y lunge` runs it directly.
+- **`lunge-mcp`** - the TypeScript MCP server. Depends on `lunge-core`. The
+  npm package name is `lunge-mcp` (npm rejected `lunge` as too similar to
+  `lunr`/`long`), but the `bin` name is `lunge`, so `npx -y lunge-mcp` runs
+  it directly and exposes the `lunge` command.
 
 Cross-platform releases run via GitHub Actions (`.github/workflows/release.yml`):
 push a `v*` tag → matrix build for 8 targets → `napi prepublish` for `lunge-core`
-→ `npm publish` for `lunge`.
+→ `npm publish` for `lunge-mcp`.
 
 For a local single-platform publish (testing): `pnpm pub` (runs
 `scripts/publish.sh`, requires `npm login`).

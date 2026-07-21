@@ -113,7 +113,7 @@ jobs:
   # ── Publish lunge-core + platform packages ──────────────────────────────
   # Authenticates with an NPM_TOKEN (classic automation or granular publish
   # token stored in GitHub Secrets). Provenance is still signed via OIDC
-  # (id-token: write at workflow level) — no Trusted Publisher config needed.
+  # (id-token: write at workflow level) - no Trusted Publisher config needed.
   publish-core:
     needs: build-native
     runs-on: ubuntu-22.04
@@ -173,7 +173,10 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
         run: npm publish --access public
 
-  # ── Publish lunge (the MCP server) ──────────────────────────────────
+  # ── Publish lunge-mcp (the MCP server) ─────────────────────────────
+  # npm rejected the unscoped name `lunge` as too similar to `lunr`/`long`,
+  # so the package is `lunge-mcp`. The `bin` name stays `lunge`, so users
+  # still run it via `npx -y lunge-mcp` → `lunge`.
   publish-mcp:
     needs: publish-core
     runs-on: ubuntu-22.04

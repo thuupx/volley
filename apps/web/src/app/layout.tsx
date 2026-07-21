@@ -14,13 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lunge - Agent-native API testing MCP server",
+  title: "Lunge - Agent-native advanced API client",
   description:
-    "An MCP server that lets AI agents perform API testing autonomously - REST, GraphQL, WebSocket, SSE, and gRPC - without any GUI. Lightweight, token-efficient, built on a Rust core.",
+    "An agent-native advanced API client - execute and test REST, GraphQL, WebSocket, SSE, and gRPC requests from any MCP-capable AI agent. No GUI, token-efficient, built on a Rust core.",
   keywords: [
     "MCP",
     "Model Context Protocol",
-    "API testing",
+    "API client",
+    "advanced curl",
     "REST",
     "GraphQL",
     "WebSocket",
@@ -31,9 +32,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "lunge" }],
   openGraph: {
-    title: "Lunge - Agent-native API testing MCP server",
+    title: "Lunge - Agent-native advanced API client",
     description:
-      "An MCP server that lets AI agents perform API testing autonomously - REST, GraphQL, WebSocket, SSE, and gRPC.",
+      "An agent-native advanced API client - execute and test REST, GraphQL, WebSocket, SSE, and gRPC requests from any MCP-capable AI agent.",
     type: "website",
   },
 };

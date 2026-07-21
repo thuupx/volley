@@ -10,9 +10,9 @@ export default function DocsIndexPage() {
     <>
       <h1>Lunge documentation</h1>
       <p className="lead">
-        An MCP (Model Context Protocol) server that lets AI agents perform API testing
-        autonomously - REST, GraphQL, WebSocket, SSE, and (later) gRPC - without any GUI,
-        manual clicking, or heavyweight desktop app.
+        An agent-native advanced API client - execute and test REST, GraphQL, WebSocket,
+        SSE, and (later) gRPC requests from any MCP-capable AI agent. No GUI, no manual
+        clicking, no heavyweight desktop app. Think advanced curl, native for agents.
       </p>
 
       <p>

@@ -1,8 +1,8 @@
 # lunge
 
-An **MCP (Model Context Protocol) server that lets AI agents perform API testing
-autonomously** - REST, GraphQL, WebSocket, SSE, and (later) gRPC - without any GUI,
-manual clicking, or heavyweight desktop app.
+An **agent-native advanced API client** - execute and test REST, GraphQL, WebSocket,
+SSE, and (later) gRPC requests from any MCP-capable AI agent. No GUI, no manual
+clicking, no heavyweight desktop app. Think advanced curl, native for agents.
 
 It is a lightweight, token-efficient alternative to Postman/Bruno for the era of
 AI coding agents. The agent calls tools directly; there are no humans in the loop and

@@ -43,7 +43,7 @@ export function DeclarativeTesting() {
         <SectionHeading
           eyebrow="Declarative testing"
           title="Agent emits JSON, not JavaScript"
-          subtitle="Postman agent mode makes you write pm.test scripts. Lunge assertions are structured data the model can emit directly — no code generation, no JS to parse, no verbose output."
+          subtitle="Postman agent mode makes you write pm.test scripts. Lunge assertions are structured data the model can emit directly - no code generation, no JS to parse, no verbose output."
         />
 
         <div className="mt-14 grid gap-5 lg:grid-cols-2">
@@ -75,7 +75,7 @@ pm.variables.set("token",
               />
               <p className="mt-3 text-xs text-muted-foreground">
                 Agent must generate valid JS, the runner evaluates it, and output is
-                human-readable prose — expensive on the context window.
+                human-readable prose - expensive on the context window.
               </p>
             </CardContent>
           </Card>
@@ -244,8 +244,9 @@ export function CTA() {
           className="mx-auto mt-4 max-w-xl text-muted-foreground"
           style={{ ["--vv-delay" as string]: "160ms" }}
         >
-          Install Lunge once and every agent you run gets a full API testing toolkit -
-          no GUI, no copy-paste, no context bloat.
+          Install Lunge once and every agent you run gets an advanced API client -
+          execute requests, run assertions, replay collections - no GUI, no copy-paste,
+          no context bloat.
         </p>
         <div
           data-reveal
@@ -253,8 +254,8 @@ export function CTA() {
           style={{ ["--vv-delay" as string]: "240ms" }}
         >
           <span className="text-muted-foreground">$</span>
-          <span className="text-foreground">npx -y </span>
-          <span className="text-primary">lunge</span>
+          <span className="text-foreground">npx -y</span>
+          <span className="text-primary">lunge-mcp</span>
         </div>
       </div>
     </section>

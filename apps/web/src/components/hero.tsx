@@ -17,19 +17,18 @@ export function Hero() {
             className="vv-hero-enter vv-hero-enter-delay-1 mb-6 border-primary/40 bg-primary/10 text-primary"
           >
             <span className="vv-pulse mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
-            Agent-native API testing
+            Agent-native advanced API client
           </Badge>
 
           <h1 className="vv-hero-enter vv-hero-enter-delay-2 text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
-            API testing for the era of{" "}
-            <span className="text-primary text-glow">AI coding agents</span>.
+            Advanced curl, <span className="text-primary text-glow">native for AI agents</span>.
           </h1>
 
           <p className="vv-hero-enter vv-hero-enter-delay-3 mx-auto mt-6 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
-            An MCP server that lets AI agents perform API testing autonomously - REST,
-            GraphQL, WebSocket, SSE, and gRPC - without any GUI, manual clicking, or
-            heavyweight desktop app. A lightweight, token-efficient alternative to
-            Postman and Bruno.
+            An agent-native advanced API client - execute and test REST, GraphQL,
+            WebSocket, SSE, and gRPC requests from any MCP-capable AI agent. No GUI,
+            no copy-paste, no context bloat. A lightweight, token-efficient alternative
+            to Postman and Bruno, for AI coding agents.
           </p>
 
           <div className="vv-hero-enter vv-hero-enter-delay-4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -50,7 +49,7 @@ export function Hero() {
           </div>
 
           <p className="vv-hero-enter vv-hero-enter-delay-4 mt-6 font-mono text-xs text-muted-foreground/70">
-            npx -y lunge &nbsp;·&nbsp; cursor / windsurf / claude / vscode
+            npx -y lunge-mcp &nbsp;·&nbsp; cursor / windsurf / claude / vscode
           </p>
         </div>
 

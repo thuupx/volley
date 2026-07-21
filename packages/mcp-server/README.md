@@ -1,7 +1,7 @@
 # lunge
 
 An [MCP server](https://modelcontextprotocol.io) that gives AI agents a full API
-testing toolkit — REST, GraphQL, WebSocket, and SSE — without bloating the
+testing toolkit - REST, GraphQL, WebSocket, and SSE - without bloating the
 context window.
 
 Lunge is **agent-native**: every tool returns a small, structured summary the
@@ -16,7 +16,7 @@ imperative JavaScript.
 ```bash
 npm install -g lunge
 # or use via npx (no global install needed):
-npx -y lunge
+npx -y lunge-mcp
 ```
 
 ## Register with an MCP client
@@ -44,7 +44,7 @@ Config file locations for common clients:
 | Devin CLI | `~/.config/devin/config.json` |
 | VS Code | `~/.vscode/mcp.json` or `.vscode/mcp.json` |
 
-Restart the client and ask the agent to list tools — you should see
+Restart the client and ask the agent to list tools - you should see
 `http_request`, `graphql_request`, `ws_session`, `sse_session`,
 `inspect_response`, and the rest of the surface below.
 
