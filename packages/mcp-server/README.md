@@ -28,7 +28,7 @@ Add Lunge to any MCP-capable client's config:
   "mcpServers": {
     "lunge": {
       "command": "npx",
-      "args": ["-y", "lunge"]
+      "args": ["-y", "lunge-mcp"]
     }
   }
 }

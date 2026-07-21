@@ -157,7 +157,7 @@ agent can escalate detail on demand.
   ```json
   {
     "mcpServers": {
-      "lunge": { "command": "npx", "args": ["-y", "lunge"] }
+      "lunge": { "command": "npx", "args": ["-y", "lunge-mcp"] }
     }
   }
   ```
