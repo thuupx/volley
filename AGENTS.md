@@ -13,7 +13,8 @@ Architecture: Rust core (`crates/core`, napi-rs **v3** native addon) + TypeScrip
 Implemented tools: `http_request`, `graphql_request`, `graphql_introspect`, `ws_session`,
 `ws_open`/`ws_send`/`ws_recv`/`ws_close`, `sse_session`, `inspect_response`, `set_env`,
 `list_envs`, `run_collection`, `list_collections`, `import_curl`, `import_openapi`,
-`import_har`, `save_request`, `set_policy`. Deferred: gRPC, data-driven runs, OAuth2.
+`import_har`, `save_request`, `save_collection`, `list_history`, `set_policy`.
+Deferred: gRPC, data-driven runs, OAuth2.
 
 ## Token optimization features
 
@@ -42,8 +43,25 @@ Implemented tools: `http_request`, `graphql_request`, `graphql_introspect`, `ws_
 - `import_har` also accepts `only2xx` (boolean) and `maxSteps` (int).
 
 Note: the param is `out`, not `writeTo` / `write_to` / `filePath`. The tool
-returns `{ imported, name, steps, writtenTo }` where `writtenTo` is `null`
+returns `{ ok, imported, name, steps, writtenTo }` where `writtenTo` is `null`
 when `out` is not provided.
+
+## Multi-step collection workflow
+
+When a user asks to save multiple prior requests as a collection, use this workflow:
+
+1. Make ad-hoc requests (`http_request`, `graphql_request`, `ws_session`, `sse_session`).
+   Each request is automatically recorded in session history with full specs + extracted values.
+2. Call `list_history` to see all recorded requests (ids: `req_1`, `req_2`, ...).
+   Each entry shows: type, full request spec, assert, extract, extractedValues, responseHandle.
+3. Call `save_collection` with `fromHistory: ["req_1", "req_2"]` to save selected steps,
+   or omit `fromHistory` to save ALL history. Add `name`, `description`, `vars` as needed.
+4. Call `run_collection` to verify the saved collection runs correctly.
+
+`save_collection` preserves extraction chaining: if step 1 extracts `token: "$.token"` and
+step 2 uses `{{token}}` in its headers, the saved collection retains both the extract spec
+and the `{{token}}` reference. `save_request` (singular) saves only the last request — use
+`save_collection` for multi-step flows.
 
 ## Layout
 

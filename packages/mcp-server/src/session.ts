@@ -17,6 +17,17 @@ export interface Policy {
   dryRun: boolean;
 }
 
+export interface HistoryEntry {
+  id: string;
+  type: string;
+  request: Record<string, unknown>;
+  assert?: unknown[];
+  extract?: Record<string, string>;
+  responseHandle?: string;
+  extractedValues?: Record<string, unknown>;
+  timestamp: number;
+}
+
 export class Session {
   private envs = new Map<string, Record<string, EnvVar>>();
   private activeEnv: string | undefined;
@@ -24,7 +35,8 @@ export class Session {
   private store = new Map<string, ExecResult>();
   private secretValues = new Set<string>();
   private counter = 0;
-  private lastRequest: { type: string; request: Record<string, unknown>; assert?: unknown[]; extract?: Record<string, string> } | undefined;
+  private reqCounter = 0;
+  private history: HistoryEntry[] = [];
   policy: Policy = { allow: [], deny: [], dryRun: false };
 
   setEnv(name: string, vars: Record<string, unknown>): void {
@@ -132,14 +144,44 @@ export class Session {
     return this.store.get(handle);
   }
 
-  recordRequest(type: string, request: Record<string, unknown>, assert?: unknown[], extract?: Record<string, string>): void {
-    this.lastRequest = { type, request, assert, extract };
+  /** Record a request in history. Returns the entry id for later linking with the response. */
+  recordRequest(type: string, request: Record<string, unknown>, assert?: unknown[], extract?: Record<string, string>): string {
+    const id = `req_${++this.reqCounter}`;
+    this.history.push({ id, type, request, assert, extract, timestamp: Date.now() });
+    if (this.history.length > 50) this.history.shift();
+    return id;
   }
 
+  /** Link a response handle + extracted values to a history entry. */
+  recordResponse(entryId: string, responseHandle: string, extractedValues?: Record<string, unknown>): void {
+    const entry = this.history.find((e) => e.id === entryId);
+    if (entry) {
+      entry.responseHandle = responseHandle;
+      entry.extractedValues = extractedValues;
+    }
+  }
+
+  /** Return all history entries (redacted for display). */
+  listHistory(): HistoryEntry[] {
+    return this.history.map((e) => ({
+      ...e,
+      request: this.redact(e.request),
+      extractedValues: e.extractedValues ? this.redact(e.extractedValues) : undefined,
+    }));
+  }
+
+  /** Get a specific history entry by id (not redacted — used internally for saving). */
+  getHistoryEntry(id: string): HistoryEntry | undefined {
+    return this.history.find((e) => e.id === id);
+  }
+
+  /** Backward-compat: return the last recorded request (used by save_request). */
   consumeLastRequest():
     | { type: string; request: Record<string, unknown>; assert?: unknown[]; extract?: Record<string, string> }
     | undefined {
-    return this.lastRequest;
+    const last = this.history[this.history.length - 1];
+    if (!last) return undefined;
+    return { type: last.type, request: last.request, assert: last.assert, extract: last.extract };
   }
 }
 

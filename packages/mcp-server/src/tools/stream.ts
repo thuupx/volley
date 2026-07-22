@@ -46,12 +46,15 @@ export function registerStreamTools(server: McpServer, session: Session): void {
       if (policy && "blocked" in policy) {
         return textResult(session, { ok: false, connected: false, error: policy.error });
       }
+      const entryId = session.recordRequest("ws", args as Record<string, unknown>, args.assert as unknown[] | undefined);
       if (policy && "dryRun" in policy) {
         const handle = session.storeResponse(policy.result);
+        session.recordResponse(entryId, handle);
         return textResult(session, formatWs(policy.result, (args.verbosity as Verbosity) ?? "summary", handle));
       }
       const result = await wsSession(spec);
       const handle = session.storeResponse(result);
+      session.recordResponse(entryId, handle);
       return textResult(session, formatWs(result, (args.verbosity as Verbosity) ?? "summary", handle));
     },
   );
@@ -85,12 +88,15 @@ export function registerStreamTools(server: McpServer, session: Session): void {
       if (policy && "blocked" in policy) {
         return textResult(session, { ok: false, connected: false, error: policy.error });
       }
+      const entryId = session.recordRequest("sse", args as Record<string, unknown>, args.assert as unknown[] | undefined);
       if (policy && "dryRun" in policy) {
         const handle = session.storeResponse(policy.result);
+        session.recordResponse(entryId, handle);
         return textResult(session, formatSse(policy.result, (args.verbosity as Verbosity) ?? "summary", handle));
       }
       const result = await sseSession(spec);
       const handle = session.storeResponse(result);
+      session.recordResponse(entryId, handle);
       return textResult(session, formatSse(result, (args.verbosity as Verbosity) ?? "summary", handle));
     },
   );

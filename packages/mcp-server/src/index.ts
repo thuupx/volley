@@ -14,6 +14,7 @@ import { registerWsTools } from "./tools/ws.js";
 import { registerSaveTool } from "./tools/save.js";
 import { registerPolicyTool } from "./tools/policy.js";
 import { registerImporterTools } from "./tools/importers.js";
+import { registerHistoryTools } from "./tools/history.js";
 
 async function main(): Promise<void> {
   const server = new McpServer({ name: "lunge", version: "1.2.0" });
@@ -30,6 +31,7 @@ async function main(): Promise<void> {
   registerSaveTool(server, session);
   registerPolicyTool(server, session);
   registerImporterTools(server);
+  registerHistoryTools(server, session);
 
   // stdout is reserved for the MCP JSON-RPC stream; log to stderr only.
   process.stderr.write(`lunge starting (core v${coreVersion()})\n`);

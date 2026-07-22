@@ -72,14 +72,16 @@ export function registerRequestTools(server: McpServer, session: Session): void 
       }
       const hasExtract = !!rest.extract && Object.keys(rest.extract as object).length > 0;
       const vb = effectiveVerbosity(verbosity, hasExtract);
-      session.recordRequest("http", rest as Record<string, unknown>, rest.assert as unknown[] | undefined, rest.extract as Record<string, string> | undefined);
+      const entryId = session.recordRequest("http", rest as Record<string, unknown>, rest.assert as unknown[] | undefined, rest.extract as Record<string, string> | undefined);
       if (policy && "dryRun" in policy) {
         const handle = session.storeResponse(policy.result);
+        session.recordResponse(entryId, handle);
         return textResult(session, formatHttp(policy.result, vb, handle));
       }
       const result = await httpRequest(spec);
       session.applyExtracted(result.extracted);
       const handle = session.storeResponse(result);
+      session.recordResponse(entryId, handle, result.extracted);
       return textResult(session, formatHttp(result, vb, handle));
     },
   );
@@ -115,14 +117,16 @@ export function registerRequestTools(server: McpServer, session: Session): void 
       }
       const hasExtract = !!rest.extract && Object.keys(rest.extract as object).length > 0;
       const vb = effectiveVerbosity(verbosity, hasExtract);
-      session.recordRequest("graphql", rest as Record<string, unknown>, rest.assert as unknown[] | undefined, rest.extract as Record<string, string> | undefined);
+      const entryId = session.recordRequest("graphql", rest as Record<string, unknown>, rest.assert as unknown[] | undefined, rest.extract as Record<string, string> | undefined);
       if (policy && "dryRun" in policy) {
         const handle = session.storeResponse(policy.result);
+        session.recordResponse(entryId, handle);
         return textResult(session, formatHttp(policy.result, vb, handle));
       }
       const result = await graphqlRequest(spec);
       session.applyExtracted(result.extracted);
       const handle = session.storeResponse(result);
+      session.recordResponse(entryId, handle, result.extracted);
       return textResult(session, formatHttp(result, vb, handle));
     },
   );
