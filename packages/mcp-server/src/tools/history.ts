@@ -6,6 +6,95 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type { Session } from "../session.js";
 import type { HistoryEntry } from "../session.js";
 
+/** Compact, accurate collection format reference derived from the actual assertion engine
+ *  (crates/core/src/assert.rs) and the collection runner (collections.ts). */
+const COLLECTION_FORMAT_REFERENCE = `# Lunge Collection Format (v1)
+
+Top-level fields:
+  name: <string>                  # collection name
+  description: <string>           # optional
+  vars: { <name>: <value> }       # optional; values may be literals or {{env.NAME}}
+  defaults:                       # optional; applied to every step
+    timeoutMs: <int>
+    headers: { <name>: <value> }
+  steps: [ <step> ]
+
+Step fields:
+  id: <string>                    # unique; used by run_collection only/tags + reporting
+  type: "http" | "graphql" | "ws" | "sse"
+  request: <protocol-specific spec>   # mirrors the matching MCP tool input
+  assert: [ <assertion> ]         # optional; list of conditions
+  extract: { <varName>: "<jsonpath>" }  # optional; captured values visible to later steps via {{varName}}
+  tags: [ <string> ]              # optional; for selective runs
+  skip: true                      # optional; skip this step
+  continueOnError: true           # optional; keep running after a failed assertion
+
+Request specs (mirror the MCP tool inputs):
+  http:    { method, url, headers, query, body, bodyType, auth, timeoutMs, followRedirects }
+  graphql: { url, query, variables, headers, auth, timeoutMs }
+  ws:      { url, headers, subprotocols, send:[{json|text}], collect:{maxMessages,maxDurationMs,until} }
+  sse:     { url, headers, collect:{maxEvents,maxDurationMs} }
+
+auth object:
+  { type: "bearer"|"basic"|"apikey", token|username|password|key|value, in: "header"|"query" }
+
+Assertion vocabulary (each item in assert[] is one object):
+  { status: 200 }                          # exact status
+  { status: { gte: 200, lt: 300 } }        # range via matchers
+  { status: { in: [200, 201] } }           # membership
+  { header: { name: "content-type", contains: "json" } }
+  { header: { name: "x-trace-id", present: true } }
+  { jsonpath: "$.user.id", equals: 42 }    # selector + matcher
+  { jsonpath: "$.items.length", gte: 1 }   # .length suffix counts array/string/object keys
+  { jsonpath: "$.email", matches: ".+@.+" }  # regex
+  { jsonpath: "$.token", exists: true }    # presence check
+  { jsonpath: "$.name", notEquals: "admin" }
+  { jsonpath: "$.tags", contains: "vip" }  # substring / array-member / object-key
+  { jsonpath: "$.list", length: 3 }
+  { timeMs: { lt: 500 } }                  # latency budget
+  { schema: { /* inline JSON Schema */ } } # validate body against JSON Schema
+  { not: { jsonpath: "$.error", exists: true } }  # negation
+
+Matchers (apply to status / header / jsonpath / timeMs values):
+  equals, notEquals, in, contains, matches (regex), exists,
+  gt, gte, lt, lte, min, max, length
+
+WS-specific assertions:
+  { anyFrame: { jsonpath: "$.type", equals: "ack" } }   # any frame matches
+  { frameCount: { gte: 1 } }                             # frame count
+
+SSE-specific assertions:
+  { anyEvent: { jsonpath: "$.event", equals: "notification" } }
+  { eventCount: { gte: 1 } }
+
+Variable chaining:
+  - Step 1: extract: { token: "$.token" }
+  - Step 2: request.headers.Authorization = "Bearer {{token}}"
+  - Extracted vars are visible to ALL later steps (not just the next one).
+  - Collection vars: {{baseUrl}}, {{env.API_KEY}} — resolved at run time.
+  - Env vars: set via set_env tool, referenced as {{env.NAME}} in collection vars.
+
+JSONPath:
+  - RFC 9535 syntax: $.a.b, $.items[0], $.items[?@.id==1], $.items[0:5]
+  - Filters need double quotes: [?@.name=="x"]
+  - search() function for substring: $.items[?search(@.name,"foo")]
+  - .length suffix: $.items.length
+
+Example (login -> profile):
+  name: Auth flow
+  vars: { baseUrl: "https://api.example.com" }
+  steps:
+    - id: login
+      type: http
+      request: { method: POST, url: "{{baseUrl}}/login", body: { user: admin, pass: "{{env.PASS}}" } }
+      assert: [{ status: 200 }, { jsonpath: "$.token", exists: true }]
+      extract: { token: "$.token" }
+    - id: profile
+      type: http
+      request: { method: GET, url: "{{baseUrl}}/me", auth: { type: bearer, token: "{{token}}" } }
+      assert: [{ status: 200 }, { jsonpath: "$.role", equals: "admin" } }
+`;
+
 interface Step {
   id?: string;
   type?: "http" | "graphql" | "ws" | "sse";
@@ -50,6 +139,23 @@ function entryToStep(entry: HistoryEntry, stepId: string): Step {
 
 export function registerHistoryTools(server: McpServer, session: Session): void {
   server.registerTool(
+    "collection_format",
+    {
+      title: "Collection format reference",
+      description:
+        "Return the Lunge collection format reference: top-level fields, step schema, " +
+        "request specs per protocol (http/graphql/ws/sse), full assertion vocabulary " +
+        "(status/header/jsonpath/timeMs/schema/not + matchers), WS/SSE-specific assertions, " +
+        "variable chaining (extract + {{var}}), and JSONPath syntax. " +
+        "Call this BEFORE writing explicit steps for save_collection or reviewing saved output.",
+      inputSchema: {},
+    },
+    async () => ({
+      content: [{ type: "text" as const, text: COLLECTION_FORMAT_REFERENCE }],
+    }),
+  );
+
+  server.registerTool(
     "list_history",
     {
       title: "List request history",
@@ -78,7 +184,7 @@ export function registerHistoryTools(server: McpServer, session: Session): void 
         "Save multiple requests as a multi-step collection file. Params: " +
         "path (required, .json/.yaml/.yml), " +
         "fromHistory (optional, array of history ids from list_history — saves in specified order; omit to save ALL history), " +
-        "steps (optional, explicit step specs — overrides fromHistory), " +
+        "steps (optional, explicit step specs — overrides fromHistory; call collection_format first for the schema), " +
         "name (optional, collection name), description (optional), vars (optional), defaults (optional). " +
         "Steps preserve extraction chaining ({{var}} from earlier steps' extract). " +
         "Returns {saved, path, stepCount, stepIds}.",
